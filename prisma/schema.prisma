@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider    = "prisma-client-js"
+  engineType  = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Package {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  description String?
+  author      String?
+  createdAt   DateTime     @default(now())
+  versions    Version[]
+  dependencies Dependency[]
+}
+
+model Version {
+  id            Int          @id @default(autoincrement())
+  versionNumber String
+  repositoryUrl String
+  createdAt     DateTime     @default(now())
+  packageId     Int
+  package       Package      @relation(fields: [packageId], references: [id])
+  dependencies  Dependency[]
+
+  @@unique([packageId, versionNumber])
+}
+
+model Dependency {
+  id                 Int      @id @default(autoincrement())
+  versionRequirement String
+  versionId          Int
+  version            Version  @relation(fields: [versionId], references: [id])
+  packageId          Int
+  package            Package  @relation(fields: [packageId], references: [id])
+}
